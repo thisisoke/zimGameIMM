@@ -39,9 +39,16 @@ frame.on("ready", function() {
         // This fucntion is for the game menu State
         
         //start Game
-        startGame() 
+        startGame();
+        viewScores();
+        endGame(); 
         
+        //reset all times, counters, and variables except for asset variables
         
+    }
+
+    function viewScores(){
+        //state to view scores
     }
 
     function startGame() {
@@ -105,6 +112,9 @@ frame.on("ready", function() {
 
 
     function endGame() {
+
+        startGame();
+        gameMenu();
 
     }
     
