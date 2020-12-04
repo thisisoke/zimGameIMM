@@ -13,11 +13,11 @@ var outerColor = silver;
 
 
 //Loading in assets in const variables
-const assets = ["isle.jpg", "pic1.jpg", "pic2.jpg", "pic3.jpg"];
-const path = "assets/";
+// const assets = [];
+// const path = "assets/";
 
 //adding asset and path to frame parameters to be loaded in.
-var frame = new Frame(scaling, width, height, color, outerColor, assets, path);
+var frame = new Frame(scaling, width, height, color, outerColor);
 frame.on("ready", function() {
     zog("ready from ZIM Frame"); // logs in console (F12 - choose console)
 
