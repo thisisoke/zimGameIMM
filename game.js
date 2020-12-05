@@ -8,7 +8,7 @@
 var scaling = "fit"; // this will resize to fit inside the screen dimensions
 var width = 1024;
 var height = 768;
-var color = silver;
+var color = white;
 var outerColor = silver;
 
 
@@ -26,26 +26,35 @@ frame.on("ready", function() {
     const stageH = frame.height;
 
     // VARIABLES
-    let floor1difficulty; 
+    let floor1difficulty;
     let floor2difficulty;
     let floor3difficulty;
+
+
+    //move to array when doing hit test for character Array[]
+    let rectFloor1;
+    let rectFloor2;
+    let rectFloor3;
 
     // PART 1 [10]
     // Load the island backing image and title
     // (no variables)
 
-    gameMenu();
+    //gameMenu();
+    startGame();
     function gameMenu() {
         // This fucntion is for the game menu State
-        
+
         //start Game
         startGame();
         viewScores();
-        endGame(); 
-        
+        endGame();
+
         //reset all times, counters, and variables except for asset variables
-        
+
     }
+
+
 
     function viewScores(){
         //state to view scores
@@ -54,36 +63,63 @@ frame.on("ready", function() {
     function startGame() {
       //This function is to start the Game
       console.log("Game Started")
-      startGameTimer();
-      startPointsCounter();
-      loadAssets();//load character and assets. Chache background
-      startLevel1();
-      startLevel2();
-      startLevel3();
+      // startGameTimer();
+      // startPointsCounter();
+//load floors0-3
+      // loadAssets();//load character and assets. Chache background
+
+      rectFloor1 = new Rectangle({
+         width: (stageW - 10),
+         height: (stageH/3),
+         color: white,
+         borderWidth: 10,
+         borderColor: black
+      }).pos(5,5);
+
+      rectFloor2 = new Rectangle({
+         width: (stageW - 10),
+         height: (stageH/3),
+         color: white,
+         borderWidth: 10,
+         borderColor: black
+      }).pos(5,((stageH/3)) );
+
+      rectFloor3 = new Rectangle({
+         width: (stageW - 10),
+         height: (stageH/3),
+         color: white,
+         borderWidth: 10,
+         borderColor: black
+      }).pos(5,((stageH/3)*2));
+
+
+      // startLevel1();
+      // startLevel2();
+      // startLevel3();
 
     }
 
 
     function startGameTimer(){
 
-        //start the game timer, use timer to trigger different stages 
+        //start the game timer, use timer to trigger different stages
 
     }
 
     function startPointsCounter(){
 
-        //start the points counter, use timer to trigger different stages 
+        //start the points counter, use timer to trigger different stages
 
     }
-    
+
     function loadAssets(){
         //load character and assets. Chache background
 
     };
-    
-    
+
+
     function startLevel1(){
-        //adjust speed, amount of bullets, and damaged to level1 setting based on time game has been running for 
+        //adjust speed, amount of bullets, and damaged to level1 setting based on time game has been running for
 
         floor1difficulty = 1;
         floor2difficulty = 34;
@@ -92,7 +128,7 @@ frame.on("ready", function() {
     }
 
     function startLevel2(){
-        //adjust speed, amount of bullets, and damaged to level2 setting based on time game has been running for 
+        //adjust speed, amount of bullets, and damaged to level2 setting based on time game has been running for
 
         floor1difficulty = 3; //maybe random difficulty
         floor2difficulty = 1;
@@ -101,8 +137,8 @@ frame.on("ready", function() {
     }
 
 
-    function startLevel2(){
-        //adjust speed, amount of bullets, and damaged to level3 setting based on time game has been running for 
+    function startLevel3(){
+        //adjust speed, amount of bullets, and damaged to level3 setting based on time game has been running for
 
         floor1difficulty = 3; //maybe random difficulty
         floor2difficulty = 1;
@@ -113,13 +149,14 @@ frame.on("ready", function() {
 
     function endGame() {
 
-        startGame();
-        gameMenu();
+//User selected options when game ends. Link functions to button onclick event
+        //startGame();
+        //gameMenu();
 
     }
-    
-    
-   
+
+
+
 
     stage.update(); // this is needed to show any changes
 
