@@ -105,7 +105,7 @@ console.log(g);
 
     function startGame() {
       //This function is to start the Game
-      console.log("Game Started")
+      console.log("Game Started");
 
       updateScores(3);
 
