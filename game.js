@@ -31,10 +31,41 @@ frame.on("ready", function() {
     let floor3difficulty;
 
 
+    let scoreCountLabel;
+    let gameTimeLabel;
+    let score = 0;
+
+
     //move to array when doing hit test for character Array[]
     let rectFloor1;
     let rectFloor2;
     let rectFloor3;
+
+
+
+    const weaponsSP = [new Rectangle(40,20,black).pos(0,120), new Rectangle(40,20,black).pos(stageW - 40,(stageH/6)),new Rectangle(40,20,black).pos(0,(stageH/6)+ stageH/3),
+   new Rectangle(40,20,black).pos(stageW - 40,(stageH/6)+ stageH/3), new Rectangle(40,20,black).pos(0,(stageH/6)+ stageH/3+ stageH/3), new Rectangle(40,20,black).pos(stageW - 40,(stageH/6)+ stageH/3 + stageH/3)];
+
+    // let weaponsArray = [new Rectangle({width:40px, height: 20px, color: black}), new Rectangle({width:40px, height: 20px, color: purple}), new Rectangle({width:40px, height: 20px, color: green})];
+
+
+function weapon(damage,rec,deathTimer){
+  this.damage = damage;
+  this.rec = rec;
+  this.alive = 0;
+  this.deathTimer = deathTimer;
+}
+
+let w = new weapon(10,weaponsSP[0],10);
+
+let g = new weapon(90,weaponsSP[1],10);
+
+
+
+
+console.log(w);
+console.log(g);
+
 
     // PART 1 [10]
     // Load the island backing image and title
@@ -56,22 +87,38 @@ frame.on("ready", function() {
 
 
 
-    function viewScores(){
+    function updateScores(s){
         //state to view scores
+
+        score += s;
+        //let scoreContainer;
+        scoreCountLabel = new Label({
+               text: "Score: " + score,
+               color:white,
+               variant:true,
+               backgroundColor:"lightblue"
+            }).center();
+
+
+        stage.update();
     }
 
     function startGame() {
       //This function is to start the Game
       console.log("Game Started")
+
+      updateScores(3);
+
       // startGameTimer();
       // startPointsCounter();
 //load floors0-3
       // loadAssets();//load character and assets. Chache background
 
+      const floorPosition = stageH;
+
       rectFloor1 = new Rectangle({
          width: (stageW - 10),
          height: (stageH/3),
-         color: white,
          borderWidth: 10,
          borderColor: black
       }).pos(5,5);
@@ -79,7 +126,6 @@ frame.on("ready", function() {
       rectFloor2 = new Rectangle({
          width: (stageW - 10),
          height: (stageH/3),
-         color: white,
          borderWidth: 10,
          borderColor: black
       }).pos(5,((stageH/3)) );
@@ -87,10 +133,11 @@ frame.on("ready", function() {
       rectFloor3 = new Rectangle({
          width: (stageW - 10),
          height: (stageH/3),
-         color: white,
          borderWidth: 10,
          borderColor: black
       }).pos(5,((stageH/3)*2));
+
+
 
 
       // startLevel1();
