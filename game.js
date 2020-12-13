@@ -212,7 +212,7 @@ shootPeashooter();
           label: "walkR"
       });
 
-      guy.on("mousedown", ()=>{
+      guy.on("keydown", ()=>{
           //guy.pauseRun(!guy.runPaused);
 
           guy.run({
