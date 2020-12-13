@@ -73,12 +73,12 @@ var frame = new Frame(scaling, width, height, color, outerColor, assets, path);
     //this.bulletsAlive = false;
   }
   let debugColorArray = ["lightblue","blue","orange","red","green","brown","black"];
-  let peashooter = new weapon(10,0,15,3,1);
-  let rifle = new weapon(90,1,15,4,3);
-  let multicannon = new weapon(8,2,30,3,3);
-  let flamer = new weapon(5,3,30,1,1);
-  let railgun = new weapon(20,4,45,1,1);
-  let arcrifle = new weapon(3,5,45,1,1);
+  let peashooter = new weapon(10,0,45,3,1);
+  let rifle = new weapon(90,1,5,4,3);
+  let multicannon = new weapon(8,2,10,3,3);
+  let flamer = new weapon(5,3,3,1,1);
+  let railgun = new weapon(20,4,5,1,1);
+  let arcrifle = new weapon(3,5,8,1,1);
   let weaponsList = [peashooter, rifle, multicannon, flamer, railgun, arcrifle];
 
   //ok so we have 3 rows with 2 coloms where weapons can spawn
@@ -111,6 +111,35 @@ var frame = new Frame(scaling, width, height, color, outerColor, assets, path);
     }
   }
 generateInitalSpawns();
+
+setInterval(shootWeapons,2500);
+function shootWeapons(){
+  if (peashooter.active == true){
+    shootPeashooter();
+  }
+  if (rifle.active == true){
+    shootRife();
+  }
+  if (multicannon.active == true){
+    shootmultiCannon();
+  }
+  if (flamer.active == true){
+    shootFlamer(true);
+  }
+  else{
+    shootFlamer(false);
+  }
+  if (railgun.active == true){
+    shootRailgun();
+  }
+  if (arcrifle.active == true){
+    shootArcRifle(true);
+  }else {
+    shootArcRifle(false);
+  }
+}
+
+
 //zog(weaponsList);
 //zog(posInactive);
 //zog(posActive);
@@ -138,6 +167,7 @@ generateInitalSpawns();
           weaponsList[i].active = true; //flip the bit
           //this chunk of code exists in randomlyplaceweapons
           //posActive.push(y);
+          //posA.push();
           //removeItemOnce(posInactive,y);
 
           //weaponsActive.push(w); ////make this weapon active, and account for it
@@ -145,8 +175,8 @@ generateInitalSpawns();
 
           //removeItemOnce(weaponsInactive,w);
           //debug2 ++;
-          //randomlyplaceweapons(weaponsList[i],i);
-          weaponsList[i].rec.animate({props:{color:debugColorArray[weaponsList[i].originalValue]},time:5});
+          randomlyplaceweapons(weaponsList[i],i);
+          weaponsList[i].rec.animate({props:{color:debugColorArray[weaponsList[i].originalValue]},time:2});
 
         }//end of nested if
       }//end of original if
@@ -157,25 +187,26 @@ generateInitalSpawns();
           weaponsList[i].timeActive = 0;
           weaponsList[i].active = false;
 
-          //debug1++;
-          //weaponsInactive.push(i);
+          //THIS MAY NOT WORK
+          posIa.push(weaponsList[i].originalValue);
+          removeItemOnce(posA,weaponsList[i].originalValue)
           //posInactive.push(weaponsSP[i].originalValue); //I THINK THIS MAY BE THE ISSUE it should not be i, because i is the value of the weapons were itterating through, not the OV of that
           weaponsList[i].originalValue = 6;
           //removeItemOnce(weaponsActive,i);
           //removeItemOnce(posActive,weaponsSP[i].originalValue);
-          //randomlyplaceweapons(weaponsList[i]);
-          weaponsList[i].rec.animate({props:{color:debugColorArray[weaponsList[i].originalValue]},time:5});
+          weaponsList[i].rec.animate({props:{color:debugColorArray[weaponsList[i].originalValue]},time:2});
         }//end of nested esleif
       }//end of original elseif
       zog(weaponsList[i].active);
       zog(weaponsList[i].originalValue);
     }//end for
   stage.update();
-  /*
+
   zog("positions in use");
-  zog(posActive);
+  zog(posA);
   zog("positions out of use");
-  zog(posInactive);
+  zog(posIa);
+    /*
   zog("weapons in use");
   zog(weaponsActive);
   zog("weapons out of use");
@@ -188,35 +219,26 @@ generateInitalSpawns();
 }//end func
 
 function randomlyplaceweapons(weapon,w){
-  zog(posInactive);
+  //zog(posInactive);
   //for this method to trigger there will be inactive positions
   //ok so get a random position out of the viable positions
-  if (posInactive.length == 0){
+  if (posIa.length == 0){
 
   }
   else {
-    let x = rand(0,posInactive.length-1);
-    //zog("random length between posInactive.length = x");
-    //zog(x);
-    //lets get which position we should target from the randomly selected inactive pos
-    //zog("pos Inactive of x = y")
-    let y = posInactive[x];
-    //zog(y);
-    let n = weaponsSP[y]; // I THINK THIS IS THE ERROR
-    //zog(n);
+    let x = rand(0,posIa.length-1);
+    posIa[x];
+    weapon.originalValue = sp[posIa[x]].pos;
+    weapon.rec = sp[posIa[x]].rec;
+    weapon.lrHand = lrHand[posIa[x]];
+    posA.push(posA[x]);
+    removeItemOnce(posIa,posIa[x]);
 
-    weapon.rec = n;
-    weapon.lrHand = lrHand[y];
-    weapon.originalValue = y;
-
-    posActive.push(y);
-    removeItemOnce(posInactive,y);
-
-    weaponsActive.push(w); ////make this weapon active, and account for it
+    //weaponsActive.push(w); ////make this weapon active, and account for it
     //time to remove this weapon from the list
 
-    removeItemOnce(weaponsInactive,w);
-    debug2 ++;
+    //removeItemOnce(weaponsInactive,w);
+    //debug2 ++;
   }
 }
 
