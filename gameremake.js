@@ -517,7 +517,7 @@ shootArcRifle(true);
 
   const guy = new Sprite({json:asset("guy-Sprite.json")})
   .sca(.7)
-  .pos(200,50, LEFT, BOTTOM)
+  .pos(playerCircle.x, playerCircle.y, LEFT, BOTTOM)
   .run({
       loop:true,
       label: "walkR"
