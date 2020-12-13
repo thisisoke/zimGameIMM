@@ -515,7 +515,7 @@ function shootArcRifle(b){
 shootArcRifle(true);
 
 ////Uncomment to skip opening menu
-// startgame();
+// startGame();
 gameMenu();
 
 let pane;
@@ -544,8 +544,27 @@ let startButton = new Button({
     corner:8,
   });
 
-  startButton.on("click",startgame);
+  startButton.on("click", function(){
+
+    pane.removeFrom(stage).animate({
+      //animating loader out slowly
+      props:{alpha: 0},
+      time: .4
+   });
+    startButton.removeFrom(stage).animate({
+      //animating loader out slowly
+      props:{alpha: 0},
+      time: .4
+   });
+
+   timeout(1, ()=>{
+    startGame();
+    });
+
+  });
+
  
+
 
 }
 
