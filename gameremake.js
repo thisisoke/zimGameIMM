@@ -132,6 +132,7 @@ generateInitalSpawns();
           weaponsList[i].active = true; //flip the bit
           //this chunk of code exists in randomlyplaceweapons
           //posActive.push(y);
+          //posA.push();
           //removeItemOnce(posInactive,y);
 
           //weaponsActive.push(w); ////make this weapon active, and account for it
@@ -139,7 +140,7 @@ generateInitalSpawns();
 
           //removeItemOnce(weaponsInactive,w);
           //debug2 ++;
-          //randomlyplaceweapons(weaponsList[i],i);
+          randomlyplaceweapons(weaponsList[i],i);
           weaponsList[i].rec.animate({props:{color:debugColorArray[weaponsList[i].originalValue]},time:5});
 
         }//end of nested if
@@ -151,13 +152,13 @@ generateInitalSpawns();
           weaponsList[i].timeActive = 0;
           weaponsList[i].active = false;
 
-          //debug1++;
-          //weaponsInactive.push(i);
+          //THIS MAY NOT WORK
+          posIa.push(weaponsList[i].originalValue);
+          removeItemOnce(posA,weaponsList[i].originalValue)
           //posInactive.push(weaponsSP[i].originalValue); //I THINK THIS MAY BE THE ISSUE it should not be i, because i is the value of the weapons were itterating through, not the OV of that
           weaponsList[i].originalValue = 6;
           //removeItemOnce(weaponsActive,i);
           //removeItemOnce(posActive,weaponsSP[i].originalValue);
-          //randomlyplaceweapons(weaponsList[i]);
           weaponsList[i].rec.animate({props:{color:debugColorArray[weaponsList[i].originalValue]},time:5});
         }//end of nested esleif
       }//end of original elseif
@@ -165,11 +166,12 @@ generateInitalSpawns();
       zog(weaponsList[i].originalValue);
     }//end for
   stage.update();
-  /*
+
   zog("positions in use");
-  zog(posActive);
+  zog(posA);
   zog("positions out of use");
-  zog(posInactive);
+  zog(posIa);
+    /*
   zog("weapons in use");
   zog(weaponsActive);
   zog("weapons out of use");
@@ -182,35 +184,26 @@ generateInitalSpawns();
 }//end func
 
 function randomlyplaceweapons(weapon,w){
-  zog(posInactive);
+  //zog(posInactive);
   //for this method to trigger there will be inactive positions
   //ok so get a random position out of the viable positions
-  if (posInactive.length == 0){
+  if (posIa.length == 0){
 
   }
   else {
-    let x = rand(0,posInactive.length-1);
-    //zog("random length between posInactive.length = x");
-    //zog(x);
-    //lets get which position we should target from the randomly selected inactive pos
-    //zog("pos Inactive of x = y")
-    let y = posInactive[x];
-    //zog(y);
-    let n = weaponsSP[y]; // I THINK THIS IS THE ERROR
-    //zog(n);
+    let x = rand(0,posIa.length-1);
+    posIa[x];
+    weapon.originalValue = sp[posIa[x]].pos;
+    weapon.rec = sp[posIa[x]].rec;
+    weapon.lrHand = lrHand[posIa[x]];
+    posA.push(posA[x]);
+    removeItemOnce(posIa,posIa[x]);
 
-    weapon.rec = n;
-    weapon.lrHand = lrHand[y];
-    weapon.originalValue = y;
-
-    posActive.push(y);
-    removeItemOnce(posInactive,y);
-
-    weaponsActive.push(w); ////make this weapon active, and account for it
+    //weaponsActive.push(w); ////make this weapon active, and account for it
     //time to remove this weapon from the list
 
-    removeItemOnce(weaponsInactive,w);
-    debug2 ++;
+    //removeItemOnce(weaponsInactive,w);
+    //debug2 ++;
   }
 }
 
