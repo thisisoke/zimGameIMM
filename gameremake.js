@@ -518,14 +518,14 @@ shootArcRifle(true);
 // startGame();
 gameMenu();
 
-let pane;
+
 
 function gameMenu(){
 
   //asset("isle.jpg").center();
 
-  pane = new Pane({
-    width:600,
+ let pane = new Pane({
+    width:400,
     height:200,
     fadeTime:.7,
     color:pink,
@@ -535,16 +535,25 @@ function gameMenu(){
     displayClose:false
  }).show();
 
+let label = new Label({
+  text:"START GAME",
+  size:12,
+  fontOptions:"bold",
+  color: black 
+});
+
 let startButton = new Button({
     width: 100,
-    height: 100,
-    label: "Start Game",
+    height: 50,
+    label: label,
     backgroundColor: white,
     rollBackgroundColor: grey,
     corner:8,
-  });
+  }).center().mov({y:60});
 
   startButton.on("click", function(){
+
+    zog("button was clicked");
 
     pane.removeFrom(stage).animate({
       //animating loader out slowly
