@@ -1,15 +1,15 @@
-var scaling = "fit"; // this will resize to fit inside the screen dimensions
-var width = 1024;
-var height = 768;
-var color = white;
-var outerColor = silver;
+const scaling = "fit"; // this will resize to fit inside the screen dimensions
+const width = 1024;
+const height = 768;
+const color = white;
+const outerColor = silver;
 
 //Loading in assets in const variables
-// const assets = [];
-// const path = "assets/";
+const assets = ["sprite-sheet-walk.png","guy-Sprite.json","wp-lowdamage.png", "wp-lowdamage-bullet.png","wp-lowdamage1.png", "wp-lowdamage1-bullet.png","wp-middamage.png", "wp-middamage-bullet.png","wp-middamage1.png", "wp-middamage1-bullet.png","wp-highdamage.png", "wp-highdamage-bullet.png","wp-highdamage1.png", "wp-highdamage1-bullet.png"];
+const path = "assets/";
 
 //adding asset and path to frame parameters to be loaded in.
-var frame = new Frame(scaling, width, height, color, outerColor);
+var frame = new Frame(scaling, width, height, color, outerColor, assets, path);
 frame.on("ready", function() {
     zog("ready from ZIM Frame"); // logs in console (F12 - choose console)
 
@@ -170,7 +170,9 @@ shootPeashooter();
       // startGameTimer();
       // startPointsCounter();
 //load floors0-3
-      // loadAssets();//load character and assets. Chache background
+      //loadAssets();//load character and assets. Chache 
+      
+      //background
 
       const floorPosition = stageH;
 
@@ -201,6 +203,30 @@ shootPeashooter();
       // startLevel1();
       // startLevel2();
       // startLevel3();
+
+      const guy = new Sprite({json:asset("guy-Sprite.json")})
+      .sca(.7)
+      .pos(200,50, LEFT, BOTTOM)
+      .run({
+          loop:true,
+          label: "walkR"
+      });
+
+      guy.on("mousedown", ()=>{
+          //guy.pauseRun(!guy.runPaused);
+
+          guy.run({
+            label: "jump",
+            call:() => {
+                guy.run({
+                  loop:true,
+                  label: "walkR"
+                });
+                guy.off()
+            }
+          })
+
+      });
 
     }
 
