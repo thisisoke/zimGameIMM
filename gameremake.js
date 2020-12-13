@@ -4,7 +4,13 @@ var width = 1024;
 var height = 768;
 var color = white;
 var outerColor = silver;
-var frame = new Frame(scaling, width, height, color, outerColor);
+
+//Loading in assets in const variables
+const assets = ["sprite-sheet-walk.png","guy-Sprite.json","wp-lowdamage.png", "wp-lowdamage-bullet.png","wp-lowdamage1.png", "wp-lowdamage1-bullet.png","wp-middamage.png", "wp-middamage-bullet.png","wp-middamage1.png", "wp-middamage1-bullet.png","wp-highdamage.png", "wp-highdamage-bullet.png","wp-highdamage1.png", "wp-highdamage1-bullet.png"];
+const path = "assets/";
+
+//adding asset and path to frame parameters to be loaded in.
+var frame = new Frame(scaling, width, height, color, outerColor, assets, path);
   frame.on("ready", function() {
   zog("ready from ZIM Frame"); // logs in console (F12 - choose console)
 
@@ -530,6 +536,30 @@ shootArcRifle(true);
        borderColor: black
     }).pos(5,((stageH/3)*2));
   }
+
+  const guy = new Sprite({json:asset("guy-Sprite.json")})
+  .sca(.7)
+  .pos(200,50, LEFT, BOTTOM)
+  .run({
+      loop:true,
+      label: "walkR"
+  });
+
+  guy.on("keydown", ()=>{
+      //guy.pauseRun(!guy.runPaused);
+
+      guy.run({
+        label: "jump",
+        call:() => {
+            guy.run({
+              loop:true,
+              label: "walkR"
+            });
+            guy.off()
+        }
+      })
+
+  });
 
   stage.update(); // this is needed to show any changes
 });
