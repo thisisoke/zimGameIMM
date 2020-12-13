@@ -391,7 +391,7 @@ var guy = new Sprite({json:asset("guy-Sprite.json")})
       label: "stop"
   });
 
-setInterval(gravity, 100, guy, 10);
+setInterval(gravity, 100, guy, 12);
 
 
 
@@ -403,27 +403,27 @@ keyboard.on("keydown", function(e) {
    zog(e.letter);
    console.log("movespeed:" +movespeed);
    if (e.letter == "a"){
-     playerCircle.x -= movespeed;
+     //playerCircle.x -= movespeed;
      guy.x -= movespeed;
      guy.run({label: "walkL",loop:true});
    }
    else if (e.letter == "d"){
-     playerCircle.x += movespeed;
+     //playerCircle.x += movespeed;
      guy.x += movespeed;
      guy.run({label: "walkR",loop:true});
    }
    //i want a thing where holding W longer then releacing makes you jump higher, and i want a collision check so you cant press it again until you hit the ground, and also i want a constant falling effect on the player until they hit that collision check refrenced above!
    else if (e.letter == "w"){
-     playerCircle.y -= jumpheight;
+     //playerCircle.y -= jumpheight;
      guy.y -= jumpheight;
      guy.run({label: "jump"});
    }
    //ok so i dont really want s to move you down, in the future ill fix this
    //i want s to, when the player hits a certin spot that spawns on the black seperators they can press S and jump down or press W and jump up
    else if (e.letter == "s"){
-     playerCircle.y += jumpheight;
+     //playerCircle.y += jumpheight;
      guy.y += jumpheight;
-     guy.run({label: "jump"});
+     guy.run({label: "stop"});
    }
 });
 function activate(e) {
@@ -514,7 +514,41 @@ function shootArcRifle(b){
 }
 shootArcRifle(true);
 
-startGame();
+////Uncomment to skip opening menu
+// startgame();
+gameMenu();
+
+let pane;
+
+function gameMenu(){
+
+  //asset("isle.jpg").center();
+
+  pane = new Pane({
+    width:600,
+    height:200,
+    fadeTime:.7,
+    color:pink,
+    label:"Play ThreeFloors!",
+    corner:8,
+    modal:false,
+    displayClose:false
+ }).show();
+
+let startButton = new Button({
+    width: 100,
+    height: 100,
+    label: "Start Game",
+    backgroundColor: white,
+    rollBackgroundColor: grey,
+    corner:8,
+  });
+
+  startButton.on("click",startgame);
+ 
+
+}
+
 
 function updateScores(s){
       //state to view scores
