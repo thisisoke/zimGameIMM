@@ -67,12 +67,12 @@ var frame = new Frame(scaling, width, height, color, outerColor);
     //this.bulletsAlive = false;
   }
   let debugColorArray = ["lightblue","blue","orange","red","green","brown","black"];
-  let peashooter = new weapon(10,0,15,3,1);
-  let rifle = new weapon(90,1,15,4,3);
-  let multicannon = new weapon(8,2,30,3,3);
-  let flamer = new weapon(5,3,30,1,1);
-  let railgun = new weapon(20,4,45,1,1);
-  let arcrifle = new weapon(3,5,45,1,1);
+  let peashooter = new weapon(10,0,45,3,1);
+  let rifle = new weapon(90,1,5,4,3);
+  let multicannon = new weapon(8,2,10,3,3);
+  let flamer = new weapon(5,3,3,1,1);
+  let railgun = new weapon(20,4,5,1,1);
+  let arcrifle = new weapon(3,5,8,1,1);
   let weaponsList = [peashooter, rifle, multicannon, flamer, railgun, arcrifle];
 
   //ok so we have 3 rows with 2 coloms where weapons can spawn
@@ -105,6 +105,35 @@ var frame = new Frame(scaling, width, height, color, outerColor);
     }
   }
 generateInitalSpawns();
+
+setInterval(shootWeapons,2500);
+function shootWeapons(){
+  if (peashooter.active == true){
+    shootPeashooter();
+  }
+  if (rifle.active == true){
+    shootRife();
+  }
+  if (multicannon.active == true){
+    shootmultiCannon();
+  }
+  if (flamer.active == true){
+    shootFlamer(true);
+  }
+  else{
+    shootFlamer(false);
+  }
+  if (railgun.active == true){
+    shootRailgun();
+  }
+  if (arcrifle.active == true){
+    shootArcRifle(true);
+  }else {
+    shootArcRifle(false);
+  }
+}
+
+
 //zog(weaponsList);
 //zog(posInactive);
 //zog(posActive);
@@ -141,7 +170,7 @@ generateInitalSpawns();
           //removeItemOnce(weaponsInactive,w);
           //debug2 ++;
           randomlyplaceweapons(weaponsList[i],i);
-          weaponsList[i].rec.animate({props:{color:debugColorArray[weaponsList[i].originalValue]},time:5});
+          weaponsList[i].rec.animate({props:{color:debugColorArray[weaponsList[i].originalValue]},time:2});
 
         }//end of nested if
       }//end of original if
@@ -159,7 +188,7 @@ generateInitalSpawns();
           weaponsList[i].originalValue = 6;
           //removeItemOnce(weaponsActive,i);
           //removeItemOnce(posActive,weaponsSP[i].originalValue);
-          weaponsList[i].rec.animate({props:{color:debugColorArray[weaponsList[i].originalValue]},time:5});
+          weaponsList[i].rec.animate({props:{color:debugColorArray[weaponsList[i].originalValue]},time:2});
         }//end of nested esleif
       }//end of original elseif
       zog(weaponsList[i].active);
