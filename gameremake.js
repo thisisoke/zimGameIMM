@@ -18,6 +18,8 @@ var frame = new Frame(scaling, width, height, color, outerColor, assets, path);
   const stageW = frame.width;
   const stageH = frame.height;
 
+  const floorPosition = stageH;
+
   // VARIABLES
   let floor1difficulty;
   let floor2difficulty;
@@ -381,24 +383,47 @@ var keyboard = new Keyboard([text1, text2]);
 var playerCircle = new Circle(10,blue).center();
 // if just the letter is needed use the keydown event
 
-var movespeed = 15;
+var guy = new Sprite({json:asset("guy-Sprite.json")})
+  .sca(.4)
+  .pos(playerCircle.x, playerCircle.y, LEFT, BOTTOM)
+  .run({
+      loop:true,
+      label: "stop"
+  });
+
+setInterval(gravity, 100, guy, 10);
+
+
+
+
+var movespeed = 20;
+var jumpheight = 100;
 
 keyboard.on("keydown", function(e) {
    zog(e.letter);
+   console.log("movespeed:" +movespeed);
    if (e.letter == "a"){
      playerCircle.x -= movespeed;
+     guy.x -= movespeed;
+     guy.run({label: "walkL",loop:true});
    }
    else if (e.letter == "d"){
      playerCircle.x += movespeed;
+     guy.x += movespeed;
+     guy.run({label: "walkR",loop:true});
    }
    //i want a thing where holding W longer then releacing makes you jump higher, and i want a collision check so you cant press it again until you hit the ground, and also i want a constant falling effect on the player until they hit that collision check refrenced above!
    else if (e.letter == "w"){
-     playerCircle.y -= movespeed;
+     playerCircle.y -= jumpheight;
+     guy.y -= jumpheight;
+     guy.run({label: "jump"});
    }
    //ok so i dont really want s to move you down, in the future ill fix this
    //i want s to, when the player hits a certin spot that spawns on the black seperators they can press S and jump down or press W and jump up
    else if (e.letter == "s"){
-     playerCircle.y += movespeed;
+     playerCircle.y += jumpheight;
+     guy.y += jumpheight;
+     guy.run({label: "jump"});
    }
 });
 function activate(e) {
@@ -489,9 +514,9 @@ function shootArcRifle(b){
 }
 shootArcRifle(true);
 
-  startGame();
+startGame();
 
-  function updateScores(s){
+function updateScores(s){
       //state to view scores
 
       score += s;
@@ -513,53 +538,39 @@ shootArcRifle(true);
 
     updateScores(0);
 
-    const floorPosition = stageH;
-
     rectFloor1 = new Rectangle({
        width: (stageW - 10),
-       height: (stageH/3),
+       height: (floorPosition/3),
        borderWidth: 10,
        borderColor: black
     }).pos(5,5);
 
     rectFloor2 = new Rectangle({
        width: (stageW - 10),
-       height: (stageH/3),
+       height: (floorPosition/3),
        borderWidth: 10,
        borderColor: black
-    }).pos(5,((stageH/3)) );
+    }).pos(5,((floorPosition/3)) );
 
     rectFloor3 = new Rectangle({
        width: (stageW - 10),
-       height: (stageH/3),
+       height: (floorPosition/3),
        borderWidth: 10,
        borderColor: black
-    }).pos(5,((stageH/3)*2));
-  }
+    }).pos(5,((floorPosition/3)*2));
 
-  const guy = new Sprite({json:asset("guy-Sprite.json")})
-  .sca(.7)
-  .pos(playerCircle.x, playerCircle.y, LEFT, BOTTOM)
-  .run({
-      loop:true,
-      label: "walkR"
-  });
-
-  guy.on("keydown", ()=>{
-      //guy.pauseRun(!guy.runPaused);
-
-      guy.run({
-        label: "jump",
-        call:() => {
-            guy.run({
-              loop:true,
-              label: "walkR"
-            });
-            guy.off()
-        }
-      })
-
-  });
+    
 
   stage.update(); // this is needed to show any changes
+  }
+
+  //gravity function. can be reused
+  function gravity(object,gravPull){
+    object.y += gravPull;
+    console.log("gravity is working");
+
+  }
+  
 });
+
+
