@@ -28,6 +28,12 @@ var frame = new Frame(scaling, width, height, color, outerColor, assets, path);
   var guy;
   let health = 300;
 
+  let hitTest1;
+  let hitTest2;
+  let grav;
+  let updateWep;
+  let shoot;
+
   //move to array when doing hit test for character Array[]
   let rectFloor1;
   let rectFloor2;
@@ -114,7 +120,7 @@ var frame = new Frame(scaling, width, height, color, outerColor, assets, path);
   }
 generateInitalSpawns();
 
-setInterval(shootWeapons,2500);
+shoot = setInterval(shootWeapons,2500);
 function shootWeapons(){
   if (peashooter.active == true){
     shootPeashooter();
@@ -308,9 +314,7 @@ function shootmultiCannon(){
   }
 
 }
-    // PART 1 [10]
-    // Load the island backing image and title
-    // (no variables)
+
 //shootmultiCannon();
 
 var sink = new Circle(10, pink).pos(0,0).alp(0);
@@ -419,6 +423,14 @@ keyboard.on("keydown", function(e) {
      guy.run({label: "stop"});
      }
      
+   } else if (e.letter == "j"){
+
+    if (grounded){
+      guy.y -= (jumpheight*3);
+      guy.run({label: "jump"});
+     }
+
+
    }
 });
 
@@ -539,6 +551,8 @@ let label = new Label({
   color: black 
 });
 
+
+
 let startButton = new Button({
     width: 100,
     height: 50,
@@ -547,6 +561,13 @@ let startButton = new Button({
     rollBackgroundColor: grey,
     corner:8,
   }).center().mov({y:60});
+
+let inst= new Label({
+  text:"WASD to move J forSuper Jump",
+  size:12,
+  fontOptions:"bold",
+  color: black 
+}).center().mov({y:20});
 
   startButton.on("click", function(){
 
@@ -562,6 +583,12 @@ let startButton = new Button({
       props:{alpha: 0},
       time: .4
    });
+
+   inst.removeFrom(stage).animate({
+    //animating loader out slowly
+    props:{alpha: 0},
+    time: .4
+ });
 
    timeout(1, ()=>{
     startGame();
@@ -596,8 +623,6 @@ function updateScores(s){
     //This function is to start the Game
     console.log("Game Started");
 
-    setInterval(countTime, 1000);
-
     updateScores(0);
 
     rectFloor1 = new Rectangle({
@@ -612,34 +637,34 @@ function updateScores(s){
        color: black
     }).pos(5,((floorPosition/3)*2));
 
-    // rectFloor3 = new Rectangle({
-    //    width: (stageW - 10),
-    //    height: (floorPosition/3),
-    //    borderWidth: 10,
-    //    borderColor: black
-    // }).pos(5,floorPosition);
+    rectFloor3 = new Rectangle({
+       width: (stageW - 10),
+       height: (10),
+       borderWidth: 10,
+       borderColor: black
+    }).pos(5,stageH - 10);
 
 
   //run the updateWeapons Function every second
-  setInterval(updateWeapons,1000);
+  updateWep = setInterval(updateWeapons,1000);
 
 
 //var playerCircle = new Circle(10,blue).center();
 // if just the letter is needed use the keydown event
 
 guy = new Sprite({json:asset("guy-Sprite.json")})
-.sca(.3)
+.sca(.2)
 .run({
     loop:true,
     label: "stop"
 }).center();
 
 //call gravity
-setInterval(gravity, 100, guy, 12);
+grav = setInterval(gravity, 100, guy, 12);
 
 //call hit test
-setInterval(hitTestguy,10,guy);
-setInterval(hitTestBullet,10000);
+hitTest1= setInterval(hitTestguy,10,guy);
+hitTest2 = setInterval(hitTestBullet,10000);
 
     
 
@@ -655,8 +680,8 @@ setInterval(hitTestBullet,10000);
     } else if (guy.hitTestBounds(rectFloor2)){
       grounded = true;
 
-    // } else if (guy.hitTestBounds(rectFloor3)){
-    //   grounded = true;
+    } else if (guy.hitTestBounds(rectFloor3)){
+      grounded = true;
 
     } else{
       object.y += gravPull;
@@ -705,27 +730,38 @@ setInterval(hitTestBullet,10000);
       } else{
 
         guy.run({label: "death"});
-
-        endGame();
+        
+          endGame();
+        
       }
     }
   }
 
   }
 
-  function countTime(){
-    gameTime += 1000;
-    zog(gameTime);
-  }
 
   function endGame(){
+
+    shootArcRifle(false);
+    shootFlamer(false);
+    clearInterval(hitTest1);
+    clearInterval(hitTest2);
+    clearInterval(grav);
+    clearInterval(updateWep);
+    clearInterval(shoot);
     
+    keyboard.hide();
+
+    health = 300;
+    
+    
+    timeout(1.5, ()=>{
     let endPane = new Pane({
       width:600,
       height:200,
       fadeTime:.7,
       color:pink,
-      label: ("You Lasted: "+ gameTime/1000 + " seconds"),
+      label: ("You Lasted: "+ score + " seconds"),
       corner:8,
       modal:false,
       displayClose:false
@@ -738,7 +774,7 @@ setInterval(hitTestBullet,10000);
     color: black 
   });
 
-   let restartButton = new Button({
+  let restartButton = new Button({
     width: 100,
     height: 50,
     label: restartLabel,
@@ -747,23 +783,44 @@ setInterval(hitTestBullet,10000);
     corner:8,
   }).center().mov({y:60});
 
+});
+
+  score = 0;
+  updateScores(0);
+
+   
+
   restartButton.on("click", function(){
 
     zog("button was clicked");
 
-    pane.removeFrom(stage).animate({
+    endPane.removeFrom(stage).animate({
       //animating loader out slowly
       props:{alpha: 0},
       time: .4
    });
-    startButton.removeFrom(stage).animate({
+    restartButton.removeFrom(stage).animate({
       //animating loader out slowly
       props:{alpha: 0},
       time: .4
    });
 
    timeout(1, ()=>{
+    weaponsInactive = [weaponsList[0],weaponsList[1],weaponsList[2],weaponsList[3],weaponsList[4],weaponsList[5]];
+
+    posIa = [0,1,2,3,4,5];
+    posA = [];
+    
+    generateInitalSpawns();
+    shoot = setInterval(shootWeapons,2500);
+
+    bullets = [];
+    keyboard.show();
+
+    guy.cache();
+
     startGame();
+
     });
 
   });
