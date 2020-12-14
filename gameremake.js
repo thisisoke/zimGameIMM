@@ -1,3 +1,4 @@
+//gameremake.js
 var scaling = "fit"; // this will resize to fit inside the screen dimensions
 var width = 1024;
 var height = 768;
@@ -5,11 +6,11 @@ var color = white;
 var outerColor = silver;
 
 //Loading in assets in const variables
-// const assets = [];
-// const path = "assets/";
+const assets = ["sprite-sheet-walk.png","guy-Sprite.json","wp-lowdamage.png", "wp-lowdamage-bullet.png","wp-lowdamage1.png", "wp-lowdamage1-bullet.png","wp-middamage.png", "wp-middamage-bullet.png","wp-middamage1.png", "wp-middamage1-bullet.png","wp-highdamage.png", "wp-highdamage-bullet.png","wp-highdamage1.png", "wp-highdamage1-bullet.png"];
+const path = "assets/";
 
 //adding asset and path to frame parameters to be loaded in.
-var frame = new Frame(scaling, width, height, color, outerColor);
+var frame = new Frame(scaling, width, height, color, outerColor, assets, path);
   frame.on("ready", function() {
   zog("ready from ZIM Frame"); // logs in console (F12 - choose console)
 
@@ -17,21 +18,32 @@ var frame = new Frame(scaling, width, height, color, outerColor);
   const stageW = frame.width;
   const stageH = frame.height;
 
+  const floorPosition = stageH;
+
   // VARIABLES
-  let floor1difficulty;
-  let floor2difficulty;
-  let floor3difficulty;
 
   let scoreCountLabel;
-  let gameTimeLabel;
+  let gameTime = 1000;
   let score = 0;
+  var guy;
+  let health = 300;
+
+  let hitTest1;
+  let hitTest2;
+  let grav;
+  let updateWep;
+  let shoot;
 
   //move to array when doing hit test for character Array[]
   let rectFloor1;
   let rectFloor2;
   let rectFloor3;
+  let grounded;
 
-
+  function spawnPoint(rec,pos){
+    this.rec = rec;
+    this.pos = pos;
+  }
 
   const weaponsSP =
     [new Rectangle(40,20,black).pos(0,120),
@@ -41,12 +53,20 @@ var frame = new Frame(scaling, width, height, color, outerColor);
     new Rectangle(40,20,black).pos(0,(stageH/6)+ stageH/3+ stageH/3),
     new Rectangle(40,20,black).pos(stageW - 40,(stageH/6)+ stageH/3 + stageH/3)];
 
+  let sp0 = new spawnPoint(weaponsSP[0],0);
+  let sp1 = new spawnPoint(weaponsSP[1],1);
+  let sp2 = new spawnPoint(weaponsSP[2],2);
+  let sp3 = new spawnPoint(weaponsSP[3],3);
+  let sp4 = new spawnPoint(weaponsSP[4],4);
+  let sp5 = new spawnPoint(weaponsSP[5],5);
+  let sp = [sp0,sp1,sp2,sp3,sp4,sp5];
+
   //left and right handedness for if cannonpositions true = left, false = right
   const lrHand = [true, false, true, false, true, false];
 
   function weapon(damage,rpos,deathTimer,minSpeed,maxSpeed){
     this.damage = damage;
-    this.rec = weaponsSP[rpos];
+    this.rec = null;//weaponsSP[rpos];
     this.deathTimer = deathTimer;
     this.spawntime = 5;
     this.active = false;
@@ -60,13 +80,13 @@ var frame = new Frame(scaling, width, height, color, outerColor);
 
     //this.bulletsAlive = false;
   }
-  let debugColorArray = ["lightblue","blue","orange","red","green","yellow"];
-  let peashooter = new weapon(10,0,15,3,1);
-  let rifle = new weapon(90,1,15,4,3);
-  let multicannon = new weapon(8,2,30,3,3);
-  let flamer = new weapon(5,3,30,1,1);
-  let railgun = new weapon(20,4,45,1,1);
-  let arcrifle = new weapon(3,5,45,1,1);
+  let debugColorArray = ["lightblue","blue","orange","red","green","brown","black"];
+  let peashooter = new weapon(10,0,45,3,1);
+  let rifle = new weapon(90,1,5,4,3);
+  let multicannon = new weapon(8,2,10,3,3);
+  let flamer = new weapon(5,3,3,1,1);
+  let railgun = new weapon(20,4,5,1,1);
+  let arcrifle = new weapon(3,5,8,1,1);
   let weaponsList = [peashooter, rifle, multicannon, flamer, railgun, arcrifle];
 
   //ok so we have 3 rows with 2 coloms where weapons can spawn
@@ -78,12 +98,60 @@ var frame = new Frame(scaling, width, height, color, outerColor);
   zog(weaponsInactive);
 
   //we then want to account for what room positions (the rows and cols) do and dont have weapons on them
-  let posActive = [];
-  let posInactive = [weaponsSP[0],weaponsSP[1],weaponsSP[2],weaponsSP[3],weaponsSP[4],weaponsSP[5]];
-  //zog(posInactive);
+  //let posActive = [];
+  //let posInactive = [sp[0],sp[1],sp[2],sp[3],sp[4],sp[5]];
+  let posIa = [0,1,2,3,4,5];
+  let posA = [];
+  function generateInitalSpawns(){
+    //find the starting positions for each weapon
+    //itterte through all the weapon positions
+    for (let i = 0; i < 6; i++){
+      //get a random array position
+      let x = rand(0,posIa.length-1);
+      //i then need to look into that arrays pos
+      posIa[x];
+      weaponsList[i].originalValue = sp[posIa[x]].pos;
+      weaponsList[i].rec = sp[posIa[x]].rec;
+      weaponsList[i].lrHand = lrHand[posIa[x]];
+      posA.push(posA[x]);
+      removeItemOnce(posIa,posIa[x]);
+      zog(weaponsList[i].originalValue);
+    }
+  }
+generateInitalSpawns();
 
-  //run the updateWeapons Function every second
-  setInterval(updateWeapons,1000);
+shoot = setInterval(shootWeapons,2500);
+function shootWeapons(){
+  if (peashooter.active == true){
+    shootPeashooter();
+  }
+  if (rifle.active == true){
+   shootRifle();
+  }
+  if (multicannon.active == true){
+   shootmultiCannon();
+  }
+  if (flamer.active == true){
+    shootFlamer(true);
+  }
+  else{
+    shootFlamer(false);
+  }
+  if (railgun.active == true){
+    shootRailgun();
+  }
+  if (arcrifle.active == true){
+    shootArcRifle(true);
+  }else {
+    shootArcRifle(false);
+  }
+}
+
+
+//zog(weaponsList);
+//zog(posInactive);
+//zog(posActive);
+  
   //using these to track the times weapons and spawn points come in and out of use
   let debug1 = 0;
   let debug2 = 0;
@@ -92,10 +160,10 @@ var frame = new Frame(scaling, width, height, color, outerColor);
     //this check allows us to see if all the weapons are active or not
     //this function triggers every second by default
     //zog("im triggered");
+    updateScores(1);
 
     //itterate through the weapons list
     for (var i = 0; i < 6; i++){
-      //zog(i);
       //check if the weapons active
       if(weaponsList[i].active == false){
         //if the checked weapon is not available increment time
@@ -105,17 +173,18 @@ var frame = new Frame(scaling, width, height, color, outerColor);
           //if this is true then its time to spawn the items but also flip the bits
           weaponsList[i].timeInactive = 0; //reset the counter
           weaponsList[i].active = true; //flip the bit
-//this chunk of code exists in randomlyplaceweapons
-          posActive.push(y);
-          removeItemOnce(posInactive,y);
+          //this chunk of code exists in randomlyplaceweapons
+          //posActive.push(y);
+          //posA.push();
+          //removeItemOnce(posInactive,y);
 
-          weaponsActive.push(w); ////make this weapon active, and account for it
+          //weaponsActive.push(w); ////make this weapon active, and account for it
           //time to remove this weapon from the list
 
-          removeItemOnce(weaponsInactive,w);
-          debug2 ++;
-          //randomlyplaceweapons(weaponsList[i],i);
-          weaponsList[i].rec.animate({props:{color:debugColorArray[weaponsList[i].originalValue]},time:5});
+          //removeItemOnce(weaponsInactive,w);
+          //debug2 ++;
+          randomlyplaceweapons(weaponsList[i],i);
+          weaponsList[i].rec.animate({props:{color:debugColorArray[weaponsList[i].originalValue]},time:1});
 
         }//end of nested if
       }//end of original if
@@ -126,24 +195,26 @@ var frame = new Frame(scaling, width, height, color, outerColor);
           weaponsList[i].timeActive = 0;
           weaponsList[i].active = false;
 
-          debug1++;
-          weaponsInactive.push(i);
-          posInactive.push(weaponsSP[i].originalValue); //I THINK THIS MAY BE THE ISSUE it should not be i, because i is the value of the weapons were itterating through, not the OV of that
+          //THIS MAY NOT WORK
+          posIa.push(weaponsList[i].originalValue);
+          removeItemOnce(posA,weaponsList[i].originalValue)
+          //posInactive.push(weaponsSP[i].originalValue); //I THINK THIS MAY BE THE ISSUE it should not be i, because i is the value of the weapons were itterating through, not the OV of that
           weaponsList[i].originalValue = 6;
-          removeItemOnce(weaponsActive,i);
-          removeItemOnce(posActive,weaponsSP[i].originalValue);
-          //randomlyplaceweapons(weaponsList[i]);
-          weaponsList[i].rec.animate({props:{color:black},time:5});
+          //removeItemOnce(weaponsActive,i);
+          //removeItemOnce(posActive,weaponsSP[i].originalValue);
+          weaponsList[i].rec.animate({props:{color:debugColorArray[weaponsList[i].originalValue]},time:2});
         }//end of nested esleif
       }//end of original elseif
       zog(weaponsList[i].active);
       zog(weaponsList[i].originalValue);
     }//end for
   stage.update();
+
   zog("positions in use");
-  zog(posActive);
+  zog(posA);
   zog("positions out of use");
-  zog(posInactive);
+  zog(posIa);
+    /*
   zog("weapons in use");
   zog(weaponsActive);
   zog("weapons out of use");
@@ -152,39 +223,30 @@ var frame = new Frame(scaling, width, height, color, outerColor);
 
   zog(debug1);
   zog(debug2);
-
+*/
 }//end func
 
 function randomlyplaceweapons(weapon,w){
-  zog(posInactive);
+  //zog(posInactive);
   //for this method to trigger there will be inactive positions
   //ok so get a random position out of the viable positions
-  if (posInactive.length == 0){
+  if (posIa.length == 0){
 
   }
   else {
-    let x = rand(0,posInactive.length-1);
-    //zog("random length between posInactive.length = x");
-    //zog(x);
-    //lets get which position we should target from the randomly selected inactive pos
-    //zog("pos Inactive of x = y")
-    let y = posInactive[x];
-    //zog(y);
-    let n = weaponsSP[y]; // I THINK THIS IS THE ERROR
-    //zog(n);
+    let x = rand(0,posIa.length-1);
+    posIa[x];
+    weapon.originalValue = sp[posIa[x]].pos;
+    weapon.rec = sp[posIa[x]].rec;
+    weapon.lrHand = lrHand[posIa[x]];
+    posA.push(posA[x]);
+    removeItemOnce(posIa,posIa[x]);
 
-    weapon.rec = n;
-    weapon.lrHand = lrHand[y];
-    weapon.originalValue = y;
-
-    posActive.push(y);
-    removeItemOnce(posInactive,y);
-
-    weaponsActive.push(w); ////make this weapon active, and account for it
+    //weaponsActive.push(w); ////make this weapon active, and account for it
     //time to remove this weapon from the list
 
-    removeItemOnce(weaponsInactive,w);
-    debug2 ++;
+    //removeItemOnce(weaponsInactive,w);
+    //debug2 ++;
   }
 }
 
@@ -252,9 +314,7 @@ function shootmultiCannon(){
   }
 
 }
-    // PART 1 [10]
-    // Load the island backing image and title
-    // (no variables)
+
 //shootmultiCannon();
 
 var sink = new Circle(10, pink).pos(0,0).alp(0);
@@ -262,6 +322,7 @@ var flames;
 var flamerIO;
 function shootFlamer(b){
   flamerIO = b;
+  
   if (flamerIO == true){
     if (flamer.lrHand == true){
       sink.pos(width,flamer.rec.y).alp(0);
@@ -312,8 +373,13 @@ function shootFlamer(b){
   else if (flamerIO == false){
     flames.pos(1000,1000);
   }
+
+  for ( i=0; i < flames.obj.length; i++){
+    bullets.push(flames.obj[i]);
+  }
 }
-//shootFlamer(true);
+shootFlamer(true);
+shootFlamer(false);
 
 //I jacked this right from the zim website, i cannot figure out how to get keyboards to work without all these labels, and keyboard show zzz
 // create Labels to capture the text from the keyboard
@@ -324,43 +390,59 @@ var text2 = new Label({text:"", backgroundColor:white}).pos(1000,2000);
 // or if just one label, then pass in the label
 var keyboard = new Keyboard([text1, text2]);
 
-var playerCircle = new Circle(10,blue).center();
-// if just the letter is needed use the keydown event
-
-var movespeed = 15;
+var movespeed = 20;
+var jumpheight = 100;
 
 keyboard.on("keydown", function(e) {
    zog(e.letter);
+   console.log("movespeed:" +movespeed);
    if (e.letter == "a"){
-     playerCircle.x -= movespeed;
+     //playerCircle.x -= movespeed;
+     guy.x -= movespeed;
+     guy.run({label: "walkL",loop:true});
    }
    else if (e.letter == "d"){
-     playerCircle.x += movespeed;
+     //playerCircle.x += movespeed;
+     guy.x += movespeed;
+     guy.run({label: "walkR",loop:true});
    }
    //i want a thing where holding W longer then releacing makes you jump higher, and i want a collision check so you cant press it again until you hit the ground, and also i want a constant falling effect on the player until they hit that collision check refrenced above!
    else if (e.letter == "w"){
-     playerCircle.y -= movespeed;
+     if (grounded){
+      guy.y -= jumpheight;
+      guy.run({label: "jump"});
+     }
+     
    }
    //ok so i dont really want s to move you down, in the future ill fix this
    //i want s to, when the player hits a certin spot that spawns on the black seperators they can press S and jump down or press W and jump up
    else if (e.letter == "s"){
-     playerCircle.y += movespeed;
+     
+    if (grounded){
+      guy.y += jumpheight;
+     guy.run({label: "stop"});
+     }
+     
+   } else if (e.letter == "j"){
+
+    if (grounded){
+      guy.y -= (jumpheight*3);
+      guy.run({label: "jump"});
+     }
+
+
    }
 });
+
+keyboard.show().pos(10000,10000); // optionally show the keyboard to start
+
 function activate(e) {
    keyboard.show();
    // remove the events when keyboard is active
    text1.off("mousedown", text1Event);
    text2.off("mousedown", text2Event);
 }
-keyboard.show().pos(10000,10000); // optionally show the keyboard to start
-/*
-// add back the events to show the keyboard
-keyboard.on("close", function() {
-   text1.on("mousedown", text1Event);
-   text2.on("mousedown", text2Event);
-});
-*/
+
 
 function shootRailgun(){
   //so for the railgun i want a weapon that will target the players current course and shoot in its direction
@@ -368,14 +450,14 @@ function shootRailgun(){
 
   //so this does not quite work because it animates to the players location not past them.
   if (railgun.lrHand == true){
-    bullets.push(new Circle(10,red).pos(railgun.rec.x,railgun.rec.y).animate({props:{x:playerCircle.x, y:playerCircle.y},time:{min:railgun.minSpeed, max:railgun.maxSpeed}, ease:"linear"}));
+    bullets.push(new Circle(10,red).pos(railgun.rec.x,railgun.rec.y).animate({props:{x:guy.x, y:guy.y},time:{min:railgun.minSpeed, max:railgun.maxSpeed}, ease:"linear"}));
 
     //attach two hitboxes, hit tests are what i think they are called
     //for the first hit box if it comes into contact with the player destory bullet and have the player take damage
     //for the second hit box if it comes into contact with a screen boundry destroy the bullet, this way if the player dodges forever the computer wont crash
     }
     else if (railgun.lrHand == false){
-      bullets.push(new Circle(10,red).pos(railgun.rec.x,railgun.rec.y).animate({props:{x:playerCircle.x, y:playerCircle.y},time:{min:railgun.minSpeed, max:railgun.maxSpeed}, ease:"linear"}));
+      bullets.push(new Circle(10,red).pos(railgun.rec.x,railgun.rec.y).animate({props:{x:guy.x, y:guy.y},time:{min:railgun.minSpeed, max:railgun.maxSpeed}, ease:"linear"}));
 
       //attach two hitboxes, hit tests are what i think they are called
       //for the first hit box if it comes into contact with the player destory bullet and have the player take damage
@@ -403,7 +485,7 @@ function shootArcRifle(b){
          interval:.02, // default
          life:4,
          decayTime:4, // default
-         sink:sink,
+         sink:guy,
          sinkForce:.6,
          gravity:0,
          force:1,
@@ -423,7 +505,7 @@ function shootArcRifle(b){
          interval:.02, // default
          life:4,
          decayTime:4, // default
-         sink:playerCircle,
+         sink:guy,
          sinkForce:.6,
          gravity:0,
          force:1,
@@ -440,22 +522,87 @@ function shootArcRifle(b){
     lightning.pos(1000,1000);
   }
 }
-//shootArcRifle(true);
-  //gameMenu();
-  startGame();
-  function gameMenu() {
-      // This fucntion is for the game menu State
+shootArcRifle(true);
+shootArcRifle(false);
 
-      //start Game
-      startGame();
-      viewScores();
-      endGame();
+////Uncomment to skip opening menu
+// startGame();
+gameMenu();
 
-      //reset all times, counters, and variables except for asset variables
 
-  }
 
-  function updateScores(s){
+function gameMenu(){
+
+ let pane = new Pane({
+    width:400,
+    height:200,
+    fadeTime:.7,
+    color:pink,
+    label:"Play ThreeFloors!",
+    corner:8,
+    modal:false,
+    displayClose:false
+ }).show();
+
+let label = new Label({
+  text:"START GAME",
+  size:12,
+  fontOptions:"bold",
+  color: black 
+});
+
+
+
+let startButton = new Button({
+    width: 100,
+    height: 50,
+    label: label,
+    backgroundColor: white,
+    rollBackgroundColor: grey,
+    corner:8,
+  }).center().mov({y:60});
+
+let inst= new Label({
+  text:"WASD to move J forSuper Jump",
+  size:12,
+  fontOptions:"bold",
+  color: black 
+}).center().mov({y:20});
+
+  startButton.on("click", function(){
+
+    zog("button was clicked");
+
+    pane.removeFrom(stage).animate({
+      //animating loader out slowly
+      props:{alpha: 0},
+      time: .4
+   });
+    startButton.removeFrom(stage).animate({
+      //animating loader out slowly
+      props:{alpha: 0},
+      time: .4
+   });
+
+   inst.removeFrom(stage).animate({
+    //animating loader out slowly
+    props:{alpha: 0},
+    time: .4
+ });
+
+   timeout(1, ()=>{
+    startGame();
+    });
+
+  });
+
+ 
+
+
+}
+
+
+function updateScores(s){
       //state to view scores
 
       score += s;
@@ -470,6 +617,7 @@ function shootArcRifle(b){
       scoreCountLabel.pos((width / 2) - (scoreCountLabel.width / 2) ,0);
       stage.update();
   }
+  
 
   function startGame() {
     //This function is to start the Game
@@ -477,98 +625,211 @@ function shootArcRifle(b){
 
     updateScores(0);
 
-    // startGameTimer();
-    // startPointsCounter();
-  //load floors0-3
-    // loadAssets();//load character and assets. Chache background
-
-    const floorPosition = stageH;
-
     rectFloor1 = new Rectangle({
        width: (stageW - 10),
-       height: (stageH/3),
-       borderWidth: 10,
-       borderColor: black
-    }).pos(5,5);
+       height: (10),
+       color:black
+    }).pos(5,(floorPosition/3));
 
     rectFloor2 = new Rectangle({
        width: (stageW - 10),
-       height: (stageH/3),
-       borderWidth: 10,
-       borderColor: black
-    }).pos(5,((stageH/3)) );
+       height: (10),
+       color: black
+    }).pos(5,((floorPosition/3)*2));
 
     rectFloor3 = new Rectangle({
        width: (stageW - 10),
-       height: (stageH/3),
+       height: (10),
        borderWidth: 10,
        borderColor: black
-    }).pos(5,((stageH/3)*2));
+    }).pos(5,stageH - 10);
 
 
+  //run the updateWeapons Function every second
+  updateWep = setInterval(updateWeapons,1000);
 
 
-    // startLevel1();
-    // startLevel2();
-    // startLevel3();
+//var playerCircle = new Circle(10,blue).center();
+// if just the letter is needed use the keydown event
 
-  }
+guy = new Sprite({json:asset("guy-Sprite.json")})
+.sca(.2)
+.run({
+    loop:true,
+    label: "stop"
+}).center();
 
+//call gravity
+grav = setInterval(gravity, 100, guy, 12);
 
-  function startGameTimer(){
+//call hit test
+hitTest1= setInterval(hitTestguy,10,guy);
+hitTest2 = setInterval(hitTestBullet,10000);
 
-      //start the game timer, use timer to trigger different stages
-
-  }
-
-  function startPointsCounter(){
-
-      //start the points counter, use timer to trigger different stages
-
-  }
-
-  function loadAssets(){
-      //load character and assets. Chache background
-
-  };
-
-
-  function startLevel1(){
-      //adjust speed, amount of bullets, and damaged to level1 setting based on time game has been running for
-
-      floor1difficulty = 1;
-      floor2difficulty = 34;
-      floor3difficulty = 10;
-
-  }
-
-  function startLevel2(){
-      //adjust speed, amount of bullets, and damaged to level2 setting based on time game has been running for
-
-      floor1difficulty = 3; //maybe random difficulty
-      floor2difficulty = 1;
-      floor3difficulty = 4;
-
-  }
-
-
-  function startLevel3(){
-      //adjust speed, amount of bullets, and damaged to level3 setting based on time game has been running for
-
-      floor1difficulty = 3; //maybe random difficulty
-      floor2difficulty = 1;
-      floor3difficulty = 4;
-
-  }
-
-
-  function endGame() {
-
-  //User selected options when game ends. Link functions to button onclick event
-      //startGame();
-      //gameMenu();
-
-  }
+    
 
   stage.update(); // this is needed to show any changes
+  }
+
+  //gravity function. can be reused
+  function gravity(object,gravPull){
+
+    if (guy.hitTestBounds(rectFloor1)){
+      grounded = true;
+
+    } else if (guy.hitTestBounds(rectFloor2)){
+      grounded = true;
+
+    } else if (guy.hitTestBounds(rectFloor3)){
+      grounded = true;
+
+    } else{
+      object.y += gravPull;
+      console.log("gravity is working");
+      grounded = false;
+
+    }
+ 
+
+  }
+
+
+  function hitTestBullet(){
+
+    for (i=0; i < bullets.length; i++){
+      if(bullets[i].hitTestBounds(stage)){
+        bullets[i].removeFrom(stage).animate({
+          //animating loader out slowly
+          props:{alpha: 0},
+          time: .4
+       });
+        removeItemOnce(bullets, i);
+      }
+  }
+}
+  
+   
+  function hitTestguy(guy){
+    zog("hitTest works");
+
+    for (i=0; i < bullets.length; i++){
+      if (guy.hitTestBounds(bullets[i])){
+
+        health -= 100;
+        bullets[i].removeFrom(stage).animate({
+          //animating loader out slowly
+          props:{alpha: 0},
+          time: .4
+       });
+        removeItemOnce(bullets, i);
+        
+
+       if(health > 0){
+
+        guy.run({label: "hit"});
+      } else{
+
+        guy.run({label: "death"});
+        
+          endGame();
+        
+      }
+    }
+  }
+
+  }
+
+
+  function endGame(){
+
+    shootArcRifle(false);
+    shootFlamer(false);
+    clearInterval(hitTest1);
+    clearInterval(hitTest2);
+    clearInterval(grav);
+    clearInterval(updateWep);
+    clearInterval(shoot);
+    
+    keyboard.hide();
+
+    health = 300;
+    
+    
+    timeout(1.5, ()=>{
+    let endPane = new Pane({
+      width:600,
+      height:200,
+      fadeTime:.7,
+      color:pink,
+      label: ("You Lasted: "+ score + " seconds"),
+      corner:8,
+      modal:false,
+      displayClose:false
+   }).show();
+
+   let restartLabel = new Label({
+    text:"RESTART GAME",
+    size:12,
+    fontOptions:"bold",
+    color: black 
+  });
+
+  let restartButton = new Button({
+    width: 100,
+    height: 50,
+    label: restartLabel,
+    backgroundColor: white,
+    rollBackgroundColor: grey,
+    corner:8,
+  }).center().mov({y:60});
+
 });
+
+  score = 0;
+  updateScores(0);
+
+   
+
+  restartButton.on("click", function(){
+
+    zog("button was clicked");
+
+    endPane.removeFrom(stage).animate({
+      //animating loader out slowly
+      props:{alpha: 0},
+      time: .4
+   });
+    restartButton.removeFrom(stage).animate({
+      //animating loader out slowly
+      props:{alpha: 0},
+      time: .4
+   });
+
+   timeout(1, ()=>{
+    weaponsInactive = [weaponsList[0],weaponsList[1],weaponsList[2],weaponsList[3],weaponsList[4],weaponsList[5]];
+
+    posIa = [0,1,2,3,4,5];
+    posA = [];
+    
+    generateInitalSpawns();
+    shoot = setInterval(shootWeapons,2500);
+
+    bullets = [];
+    keyboard.show();
+
+    guy.cache();
+
+    startGame();
+
+    });
+
+  });
+    
+
+  }
+  
+});
+
+
+
+
