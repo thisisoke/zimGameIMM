@@ -664,7 +664,7 @@ grav = setInterval(gravity, 100, guy, 12);
 
 //call hit test
 hitTest1= setInterval(hitTestguy,10,guy);
-hitTest2 = setInterval(hitTestBullet,10000);
+hitTest2 = setInterval(hitTestBullet,10);
 
     
 
@@ -697,7 +697,25 @@ hitTest2 = setInterval(hitTestBullet,10000);
   function hitTestBullet(){
 
     for (i=0; i < bullets.length; i++){
-      if(bullets[i].hitTestBounds(stage)){
+      if(bullets[i].hitTestBounds(rectFloor1)){
+        bullets[i].removeFrom(stage).animate({
+          //animating loader out slowly
+          props:{alpha: 0},
+          time: .4
+       });
+        removeItemOnce(bullets, i);
+      }
+
+      if(bullets[i].hitTestBounds(rectFloor2)){
+        bullets[i].removeFrom(stage).animate({
+          //animating loader out slowly
+          props:{alpha: 0},
+          time: .4
+       });
+        removeItemOnce(bullets, i);
+      }
+
+      if(bullets[i].hitTestBounds(rectFloor3)){
         bullets[i].removeFrom(stage).animate({
           //animating loader out slowly
           props:{alpha: 0},
@@ -752,7 +770,7 @@ hitTest2 = setInterval(hitTestBullet,10000);
     
     keyboard.hide();
 
-    health = 300;
+    health = 2000;
     
     
     timeout(1.5, ()=>{
@@ -785,12 +803,12 @@ hitTest2 = setInterval(hitTestBullet,10000);
 
 });
 
-  score = 0;
-  updateScores(0);
-
    
 
   restartButton.on("click", function(){
+
+    score = 0;
+    updateScores(0);
 
     zog("button was clicked");
 
