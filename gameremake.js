@@ -21,18 +21,18 @@ var frame = new Frame(scaling, width, height, color, outerColor, assets, path);
   const floorPosition = stageH;
 
   // VARIABLES
-  let floor1difficulty;
-  let floor2difficulty;
-  let floor3difficulty;
 
   let scoreCountLabel;
-  let gameTimeLabel;
+  let gameTime = 1000;
   let score = 0;
+  var guy;
+  let health = 300;
 
   //move to array when doing hit test for character Array[]
   let rectFloor1;
   let rectFloor2;
   let rectFloor3;
+  let grounded;
 
   function spawnPoint(rec,pos){
     this.rec = rec;
@@ -120,10 +120,10 @@ function shootWeapons(){
     shootPeashooter();
   }
   if (rifle.active == true){
-    shootRife();
+   shootRifle();
   }
   if (multicannon.active == true){
-    shootmultiCannon();
+   shootmultiCannon();
   }
   if (flamer.active == true){
     shootFlamer(true);
@@ -145,8 +145,7 @@ function shootWeapons(){
 //zog(weaponsList);
 //zog(posInactive);
 //zog(posActive);
-  //run the updateWeapons Function every second
-  setInterval(updateWeapons,1000);
+  
   //using these to track the times weapons and spawn points come in and out of use
   let debug1 = 0;
   let debug2 = 0;
@@ -155,6 +154,7 @@ function shootWeapons(){
     //this check allows us to see if all the weapons are active or not
     //this function triggers every second by default
     //zog("im triggered");
+    updateScores(1);
 
     //itterate through the weapons list
     for (var i = 0; i < 6; i++){
@@ -178,7 +178,7 @@ function shootWeapons(){
           //removeItemOnce(weaponsInactive,w);
           //debug2 ++;
           randomlyplaceweapons(weaponsList[i],i);
-          weaponsList[i].rec.animate({props:{color:debugColorArray[weaponsList[i].originalValue]},time:2});
+          weaponsList[i].rec.animate({props:{color:debugColorArray[weaponsList[i].originalValue]},time:1});
 
         }//end of nested if
       }//end of original if
@@ -270,7 +270,7 @@ function shootPeashooter(){
       //for the second hit box if it comes into contact with a screen boundry destroy the bullet, this way if the player dodges forever the computer wont crash
   }
 }//end of func
-shootPeashooter();
+//shootPeashooter();
 //console.log(w);
 //console.log(g);
 
@@ -289,7 +289,7 @@ function shootRifle(){
   }
 
 }
-shootRifle();
+//shootRifle();
 
 function shootmultiCannon(){
   for (let x = 0; x != 3; x++){
@@ -311,13 +311,14 @@ function shootmultiCannon(){
     // PART 1 [10]
     // Load the island backing image and title
     // (no variables)
-shootmultiCannon();
+//shootmultiCannon();
 
 var sink = new Circle(10, pink).pos(0,0).alp(0);
 var flames;
 var flamerIO;
 function shootFlamer(b){
   flamerIO = b;
+  
   if (flamerIO == true){
     if (flamer.lrHand == true){
       sink.pos(width,flamer.rec.y).alp(0);
@@ -368,8 +369,13 @@ function shootFlamer(b){
   else if (flamerIO == false){
     flames.pos(1000,1000);
   }
+
+  for ( i=0; i < flames.obj.length; i++){
+    bullets.push(flames.obj[i]);
+  }
 }
 shootFlamer(true);
+shootFlamer(false);
 
 //I jacked this right from the zim website, i cannot figure out how to get keyboards to work without all these labels, and keyboard show zzz
 // create Labels to capture the text from the keyboard
@@ -379,22 +385,6 @@ var text2 = new Label({text:"", backgroundColor:white}).pos(1000,2000);
 // create a new Keyboard and pass in the labels as an array
 // or if just one label, then pass in the label
 var keyboard = new Keyboard([text1, text2]);
-
-var playerCircle = new Circle(10,blue).center();
-// if just the letter is needed use the keydown event
-
-var guy = new Sprite({json:asset("guy-Sprite.json")})
-  .sca(.4)
-  .pos(playerCircle.x, playerCircle.y, LEFT, BOTTOM)
-  .run({
-      loop:true,
-      label: "stop"
-  });
-
-setInterval(gravity, 100, guy, 12);
-
-
-
 
 var movespeed = 20;
 var jumpheight = 100;
@@ -414,25 +404,33 @@ keyboard.on("keydown", function(e) {
    }
    //i want a thing where holding W longer then releacing makes you jump higher, and i want a collision check so you cant press it again until you hit the ground, and also i want a constant falling effect on the player until they hit that collision check refrenced above!
    else if (e.letter == "w"){
-     //playerCircle.y -= jumpheight;
-     guy.y -= jumpheight;
-     guy.run({label: "jump"});
+     if (grounded){
+      guy.y -= jumpheight;
+      guy.run({label: "jump"});
+     }
+     
    }
    //ok so i dont really want s to move you down, in the future ill fix this
    //i want s to, when the player hits a certin spot that spawns on the black seperators they can press S and jump down or press W and jump up
    else if (e.letter == "s"){
-     //playerCircle.y += jumpheight;
-     guy.y += jumpheight;
+     
+    if (grounded){
+      guy.y += jumpheight;
      guy.run({label: "stop"});
+     }
+     
    }
 });
+
+keyboard.show().pos(10000,10000); // optionally show the keyboard to start
+
 function activate(e) {
    keyboard.show();
    // remove the events when keyboard is active
    text1.off("mousedown", text1Event);
    text2.off("mousedown", text2Event);
 }
-keyboard.show().pos(10000,10000); // optionally show the keyboard to start
+
 
 function shootRailgun(){
   //so for the railgun i want a weapon that will target the players current course and shoot in its direction
@@ -440,14 +438,14 @@ function shootRailgun(){
 
   //so this does not quite work because it animates to the players location not past them.
   if (railgun.lrHand == true){
-    bullets.push(new Circle(10,red).pos(railgun.rec.x,railgun.rec.y).animate({props:{x:playerCircle.x, y:playerCircle.y},time:{min:railgun.minSpeed, max:railgun.maxSpeed}, ease:"linear"}));
+    bullets.push(new Circle(10,red).pos(railgun.rec.x,railgun.rec.y).animate({props:{x:guy.x, y:guy.y},time:{min:railgun.minSpeed, max:railgun.maxSpeed}, ease:"linear"}));
 
     //attach two hitboxes, hit tests are what i think they are called
     //for the first hit box if it comes into contact with the player destory bullet and have the player take damage
     //for the second hit box if it comes into contact with a screen boundry destroy the bullet, this way if the player dodges forever the computer wont crash
     }
     else if (railgun.lrHand == false){
-      bullets.push(new Circle(10,red).pos(railgun.rec.x,railgun.rec.y).animate({props:{x:playerCircle.x, y:playerCircle.y},time:{min:railgun.minSpeed, max:railgun.maxSpeed}, ease:"linear"}));
+      bullets.push(new Circle(10,red).pos(railgun.rec.x,railgun.rec.y).animate({props:{x:guy.x, y:guy.y},time:{min:railgun.minSpeed, max:railgun.maxSpeed}, ease:"linear"}));
 
       //attach two hitboxes, hit tests are what i think they are called
       //for the first hit box if it comes into contact with the player destory bullet and have the player take damage
@@ -455,7 +453,7 @@ function shootRailgun(){
   //then after a visual image of where this railgun is about to shoot appears (like a lazer beam) fire a fast moving bullet at the player
   }
 }
-shootRailgun();
+//shootRailgun();
 
 var sink;
 var lightning;
@@ -475,7 +473,7 @@ function shootArcRifle(b){
          interval:.02, // default
          life:4,
          decayTime:4, // default
-         sink:sink,
+         sink:guy,
          sinkForce:.6,
          gravity:0,
          force:1,
@@ -495,7 +493,7 @@ function shootArcRifle(b){
          interval:.02, // default
          life:4,
          decayTime:4, // default
-         sink:playerCircle,
+         sink:guy,
          sinkForce:.6,
          gravity:0,
          force:1,
@@ -513,6 +511,7 @@ function shootArcRifle(b){
   }
 }
 shootArcRifle(true);
+shootArcRifle(false);
 
 ////Uncomment to skip opening menu
 // startGame();
@@ -521,8 +520,6 @@ gameMenu();
 
 
 function gameMenu(){
-
-  //asset("isle.jpg").center();
 
  let pane = new Pane({
     width:400,
@@ -599,35 +596,52 @@ function updateScores(s){
     //This function is to start the Game
     console.log("Game Started");
 
+    setInterval(countTime, 1000);
+
     updateScores(0);
 
     rectFloor1 = new Rectangle({
        width: (stageW - 10),
-       height: (floorPosition/3),
-       borderWidth: 10,
-       borderColor: black
-    }).pos(5,5);
+       height: (10),
+       color:black
+    }).pos(5,(floorPosition/3));
 
     rectFloor2 = new Rectangle({
        width: (stageW - 10),
-       height: (floorPosition/3),
-       borderWidth: 10,
-       borderColor: black
-    }).pos(5,((floorPosition/3)) );
-
-    rectFloor3 = new Rectangle({
-       width: (stageW - 10),
-       height: (floorPosition/3),
-       borderWidth: 10,
-       borderColor: black
+       height: (10),
+       color: black
     }).pos(5,((floorPosition/3)*2));
 
-    
+    // rectFloor3 = new Rectangle({
+    //    width: (stageW - 10),
+    //    height: (floorPosition/3),
+    //    borderWidth: 10,
+    //    borderColor: black
+    // }).pos(5,floorPosition);
 
-   
-   for (i=0; i < bullets.length; i++){
-    setInterval(hitTestguy,10,guy, bullets[i]);
-   }
+
+  //run the updateWeapons Function every second
+  setInterval(updateWeapons,1000);
+
+
+//var playerCircle = new Circle(10,blue).center();
+// if just the letter is needed use the keydown event
+
+guy = new Sprite({json:asset("guy-Sprite.json")})
+.sca(.3)
+.run({
+    loop:true,
+    label: "stop"
+}).center();
+
+//call gravity
+setInterval(gravity, 100, guy, 12);
+
+//call hit test
+setInterval(hitTestguy,10,guy);
+setInterval(hitTestBullet,10000);
+
+    
 
   stage.update(); // this is needed to show any changes
   }
@@ -635,23 +649,130 @@ function updateScores(s){
   //gravity function. can be reused
   function gravity(object,gravPull){
 
-    
-    object.y += gravPull;
-    console.log("gravity is working");
+    if (guy.hitTestBounds(rectFloor1)){
+      grounded = true;
+
+    } else if (guy.hitTestBounds(rectFloor2)){
+      grounded = true;
+
+    // } else if (guy.hitTestBounds(rectFloor3)){
+    //   grounded = true;
+
+    } else{
+      object.y += gravPull;
+      console.log("gravity is working");
+      grounded = false;
+
+    }
+ 
 
   }
 
-  function hitTestguy(guy,bullet){
-    zog("hitTest works")
-    if (guy.hitTestBounds(bullet)){
-      //if(health > 0){
 
-      guy.run({label: "hit"});
-      //}
+  function hitTestBullet(){
+
+    for (i=0; i < bullets.length; i++){
+      if(bullets[i].hitTestBounds(stage)){
+        bullets[i].removeFrom(stage).animate({
+          //animating loader out slowly
+          props:{alpha: 0},
+          time: .4
+       });
+        removeItemOnce(bullets, i);
+      }
+  }
+}
+  
+   
+  function hitTestguy(guy){
+    zog("hitTest works");
+
+    for (i=0; i < bullets.length; i++){
+      if (guy.hitTestBounds(bullets[i])){
+
+        health -= 100;
+        bullets[i].removeFrom(stage).animate({
+          //animating loader out slowly
+          props:{alpha: 0},
+          time: .4
+       });
+        removeItemOnce(bullets, i);
+        
+
+       if(health > 0){
+
+        guy.run({label: "hit"});
+      } else{
+
+        guy.run({label: "death"});
+
+        endGame();
+      }
     }
+  }
+
+  }
+
+  function countTime(){
+    gameTime += 1000;
+    zog(gameTime);
+  }
+
+  function endGame(){
+    
+    let endPane = new Pane({
+      width:600,
+      height:200,
+      fadeTime:.7,
+      color:pink,
+      label: ("You Lasted: "+ gameTime/1000 + " seconds"),
+      corner:8,
+      modal:false,
+      displayClose:false
+   }).show();
+
+   let restartLabel = new Label({
+    text:"RESTART GAME",
+    size:12,
+    fontOptions:"bold",
+    color: black 
+  });
+
+   let restartButton = new Button({
+    width: 100,
+    height: 50,
+    label: restartLabel,
+    backgroundColor: white,
+    rollBackgroundColor: grey,
+    corner:8,
+  }).center().mov({y:60});
+
+  restartButton.on("click", function(){
+
+    zog("button was clicked");
+
+    pane.removeFrom(stage).animate({
+      //animating loader out slowly
+      props:{alpha: 0},
+      time: .4
+   });
+    startButton.removeFrom(stage).animate({
+      //animating loader out slowly
+      props:{alpha: 0},
+      time: .4
+   });
+
+   timeout(1, ()=>{
+    startGame();
+    });
+
+  });
+    
 
   }
   
 });
+
+
 
 
