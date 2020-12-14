@@ -593,6 +593,7 @@ function updateScores(s){
       scoreCountLabel.pos((width / 2) - (scoreCountLabel.width / 2) ,0);
       stage.update();
   }
+  
 
   function startGame() {
     //This function is to start the Game
@@ -623,13 +624,31 @@ function updateScores(s){
 
     
 
+   
+   for (i=0; i < bullets.length; i++){
+    setInterval(hitTestguy,10,guy, bullets[i]);
+   }
+
   stage.update(); // this is needed to show any changes
   }
 
   //gravity function. can be reused
   function gravity(object,gravPull){
+
+    
     object.y += gravPull;
     console.log("gravity is working");
+
+  }
+
+  function hitTestguy(guy,bullet){
+    zog("hitTest works")
+    if (guy.hitTestBounds(bullet)){
+      //if(health > 0){
+
+      guy.run({label: "hit"});
+      //}
+    }
 
   }
   
